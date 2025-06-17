@@ -5,7 +5,7 @@ data:
  add_time_reference: true
  add_xzplane: false
  add_yzplane: false
- add_scalar_features: false
+ add_scalar_features: true
  reinsert_channels: false
  rescale_data: true
  scalar_features_preprocessing: # following weaver defaults
@@ -19,12 +19,12 @@ data:
 
 train: true
 training:
- iterations: 10
+ iterations: 6000
  batchsize: 128
  lr: 1e-3
  validate_every_n_steps: 5000
 
- force_xformers: false # 'false' runs on cpu and gpu, 'true' only runs on gpu but is much faster
+ force_xformers: true # 'false' runs on cpu and gpu, 'true' only runs on gpu but is much faster
 
 evaluation:
  batchsize: 128

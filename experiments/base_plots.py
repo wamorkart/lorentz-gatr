@@ -3,10 +3,10 @@ import numpy as np
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = "Charter"
-plt.rcParams["text.usetex"] = True
-plt.rcParams[
-    "text.latex.preamble"
-] = r"\usepackage[bitstream-charter]{mathdesign} \usepackage{amsmath} \usepackage{siunitx}"
+plt.rcParams["text.usetex"] = False
+# plt.rcParams[
+#     "text.latex.preamble"
+# ] = r"\usepackage[bitstream-charter]{mathdesign} \usepackage{amsmath} \usepackage{siunitx}"
 
 FONTSIZE = 14
 FONTSIZE_LEGEND = 13
@@ -34,8 +34,8 @@ def plot_loss(file, losses, lr=None, labels=None, logy=True):
         axright = ax.twinx()
         axright.plot(iterations, lr, label="learning rate", color="crimson")
         axright.set_ylabel("Learning rate", fontsize=FONTSIZE)
-    ax.set_xlabel("Number of iterations", fontsize=FONTSIZE)
-    ax.set_ylabel("Loss", fontsize=FONTSIZE)
+    # ax.set_xlabel("Number of iterations", fontsize=FONTSIZE)
+    # ax.set_ylabel("Loss", fontsize=FONTSIZE)
     ax.legend(fontsize=FONTSIZE_LEGEND, frameon=False, loc="upper right")
     fig.savefig(file, format="pdf", bbox_inches="tight")
     plt.close()
@@ -55,8 +55,8 @@ def plot_metric(file, metrics, metric_label, labels=None, logy=False):
 
     if logy:
         ax.set_yscale("log")
-    ax.set_ylabel(metric_label, fontsize=FONTSIZE)
-    ax.set_xlabel("Number of iterations", fontsize=FONTSIZE)
+    # ax.set_ylabel(metric_label, fontsize=FONTSIZE)
+    # ax.set_xlabel("Number of iterations", fontsize=FONTSIZE)
     ax.legend(fontsize=FONTSIZE_LEGEND, frameon=False, loc="upper left")
     fig.savefig(file, format="pdf", bbox_inches="tight")
     plt.close()

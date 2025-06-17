@@ -2,8 +2,8 @@ exp_type: toptagging
 exp_name: topt_debug
 
 data:
- data_dir : data/
- dataset: mini
+ data_dir : data/h1/
+ dataset: combinedh1_partfourvec_q2
  add_scalar_features: false
 
 defaults:

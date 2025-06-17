@@ -205,9 +205,9 @@ class TaggingExperiment(BaseExperiment):
             )
 
         # create latex string
-        if mode == "eval":
-            tex_string = f"{self.cfg.run_name} & {metrics['accuracy']:.4f} & {metrics['auc']:.4f} & {metrics['rej03']:.0f} & {metrics['rej05']:.0f} \\\\"
-            LOGGER.info(tex_string)
+        # if mode == "eval":
+            # tex_string = f"{self.cfg.run_name} & {metrics['accuracy']:.4f} & {metrics['auc']:.4f} & {metrics['rej03']:.0f} & {metrics['rej05']:.0f} \\\\"
+            # LOGGER.info(tex_string)
 
         if self.cfg.use_mlflow:
             for key, value in metrics.items():
@@ -295,7 +295,8 @@ class TopTaggingExperiment(TaggingExperiment):
 
     def init_data(self):
         data_path = os.path.join(
-            self.cfg.data.data_dir, f"toptagging_{self.cfg.data.dataset}.npz"
+            self.cfg.data.data_dir, f"{self.cfg.data.dataset}.npz"
+            # self.cfg.data.data_dir, f"toptagging_{self.cfg.data.dataset}.npz"
         )
         self._init_data(TopTaggingDataset, data_path)
 

@@ -112,6 +112,8 @@ def embed_tagging_data_into_ga(fourmomenta, scalars, ptr, cfg_data):
         multivectors[~insert_spurion] = multivectors_buffer
         multivectors[insert_spurion] = spurions.repeat(batchsize, 1).unsqueeze(-2)
         scalars_buffer = scalars.clone()
+        print(f"scalars shape: {scalars.shape}")
+        
         scalars = torch.zeros(
             multivectors.shape[0],
             scalars.shape[1],

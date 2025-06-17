@@ -11,10 +11,10 @@ from experiments.base_plots import plot_loss, plot_metric
 
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = "Charter"
-plt.rcParams["text.usetex"] = True
-plt.rcParams[
-    "text.latex.preamble"
-] = r"\usepackage[bitstream-charter]{mathdesign} \usepackage{amsmath} \usepackage{siunitx}"
+plt.rcParams["text.usetex"] = False
+# plt.rcParams[
+#     "text.latex.preamble"
+# ] = r"\usepackage[bitstream-charter]{mathdesign} \usepackage{amsmath} \usepackage{siunitx}"
 
 FONTSIZE = 14
 FONTSIZE_LEGEND = 13
@@ -76,8 +76,8 @@ def plot_roc(out, fpr, tpr, auc, title=None):
 
     # usual roc
     fig, ax = plt.subplots(figsize=(5, 4))
-    ax.set_xlabel(r"$\epsilon_B$", fontsize=FONTSIZE)
-    ax.set_ylabel(r"$\epsilon_S$", fontsize=FONTSIZE)
+    # ax.set_xlabel(r"$\epsilon_B$", fontsize=FONTSIZE)
+    # ax.set_ylabel(r"$\epsilon_S$", fontsize=FONTSIZE)
     ax.plot(rnd, rnd, "k--")
     ax.plot(fpr, tpr, color=color)
     ax.text(
@@ -103,8 +103,8 @@ def plot_roc(out, fpr, tpr, auc, title=None):
 
     # physicists roc
     fig, ax = plt.subplots(figsize=(5, 4))
-    ax.set_xlabel(r"$\epsilon_S$", fontsize=FONTSIZE)
-    ax.set_ylabel(r"$1 / \epsilon_B$", fontsize=FONTSIZE)
+    # ax.set_xlabel(r"$\epsilon_S$", fontsize=FONTSIZE)
+    # ax.set_ylabel(r"$1 / \epsilon_B$", fontsize=FONTSIZE)
     ax.set_yscale("log")
     ax.plot(rnd, 1 / rnd, "k--")
     ax.plot(tpr, 1 / fpr, color=color)
@@ -131,8 +131,8 @@ def plot_roc(out, fpr, tpr, auc, title=None):
 
     # sic
     fig, ax = plt.subplots(figsize=(5, 4))
-    ax.set_xlabel(r"$\epsilon_S$", fontsize=FONTSIZE)
-    ax.set_ylabel(r"$\epsilon_S / \sqrt{\epsilon_B}$", fontsize=FONTSIZE)
+    # ax.set_xlabel(r"$\epsilon_S$", fontsize=FONTSIZE)
+    # ax.set_ylabel(r"$\epsilon_S / \sqrt{\epsilon_B}$", fontsize=FONTSIZE)
     ax.plot(rnd, rnd**0.5, "k--")
     ax.plot(tpr, tpr / fpr**0.5, color=color)
     ax.text(
@@ -165,8 +165,8 @@ def plot_score(
     fig, ax = plt.subplots(figsize=(5, 4))
     if logy:
         ax.set_yscale("log")
-    ax.set_ylabel("Normalized", fontsize=FONTSIZE)
-    ax.set_xlabel("Classifier score (0=QCD, 1=top)", fontsize=FONTSIZE)
+    # ax.set_ylabel("Normalized", fontsize=FONTSIZE)
+    # ax.set_xlabel("Classifier score (0=QCD, 1=top)", fontsize=FONTSIZE)
     _, bins, _ = ax.hist(
         labels_predicted[labels_true == 0],
         range=xrange,

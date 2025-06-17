@@ -1,3 +1,4 @@
+## starts with root files and creates h5 files containing particle features and jet features
 import os
 import uproot3 as uproot
 import pandas as pd
@@ -142,6 +143,8 @@ def make_np_entries(particles, jets):
     part_py = part_pt * np.sin(part_phi)
     part_pz = part_pt * np.sinh(part_eta)
 
+    print (f"particle energy: {part_e} px: {part_px} py: {part_py} pz: {part_pz}")
+
     points[:, :, 0] = part_pt
     points[:, :, 1] = part_eta
     points[:, :, 2] = part_phi
@@ -223,17 +226,17 @@ if __name__ == '__main__':
     assert ntrain > ntest, "Training set should be larger than test set"
 
     # Split and save
-    with h5py.File('train.h5', "w") as fh5:
+    with h5py.File('train_H1.h5', "w") as fh5:
         fh5.create_dataset('data', data=particles[:ntrain])
         fh5.create_dataset('jet', data=jets[:ntrain])
         fh5.create_dataset('pid', data=pid[:ntrain])
 
-    with h5py.File('val.h5', "w") as fh5:
+    with h5py.File('val_H1.h5', "w") as fh5:
         fh5.create_dataset('data', data=particles[ntrain:ntrain+nval])
         fh5.create_dataset('jet', data=jets[ntrain:ntrain+nval])
         fh5.create_dataset('pid', data=pid[ntrain:ntrain+nval])
 
-    with h5py.File('test.h5', "w") as fh5:
+    with h5py.File('test_H1.h5', "w") as fh5:
         fh5.create_dataset('data', data=particles[ntrain+nval:])
         fh5.create_dataset('jet', data=jets[ntrain+nval:])
         fh5.create_dataset('pid', data=pid[ntrain+nval:])
