@@ -39,46 +39,46 @@ class TaggingDataset(torch.utils.data.Dataset):
         return self.data_list[idx]
 
 
-# class TopTaggingDataset(TaggingDataset):
-#     def load_data(
-#         self,
-#         filename,
-#         mode,
-#         dtype=torch.float32,
-#     ):
-#         """
-#         Parameters
-#         ----------
-#         filename : str
-#             Path to file in npz format where the dataset in stored
-#         mode : {"train", "test", "val"}
-#             Purpose of the dataset
-#             Train, test and validation datasets are already seperated in the specified file
-#         """
-#         data = np.load(filename)
-#         kinematics = data[f"kinematics_{mode}"]
-#         labels = data[f"labels_{mode}"]
-
-#         kinematics = torch.tensor(kinematics, dtype=dtype)
-#         labels = torch.tensor(labels, dtype=torch.bool)
-
-#         # create list of torch_geometric.data.Data objects
-#         self.data_list = []
-#         for i in range(kinematics.shape[0]):
-#             # drop zero-padded components
-#             mask = (kinematics[i, ...].abs() > EPS).all(dim=-1)
-#             fourmomenta = kinematics[i, ...][mask]
-#             label = labels[i, ...]
-#             scalars = torch.zeros(
-#                 fourmomenta.shape[0],
-#                 0,
-#                 dtype=dtype,
-#             )  # no scalar information
-#             data = Data(x=fourmomenta, scalars=scalars, label=label)
-#             self.data_list.append(data)
-
-
 class TopTaggingDataset(TaggingDataset):
+    def load_data(
+        self,
+        filename,
+        mode,
+        dtype=torch.float32,
+    ):
+        """
+        Parameters
+        ----------
+        filename : str
+            Path to file in npz format where the dataset in stored
+        mode : {"train", "test", "val"}
+            Purpose of the dataset
+            Train, test and validation datasets are already seperated in the specified file
+        """
+        data = np.load(filename)
+        kinematics = data[f"kinematics_{mode}"]
+        labels = data[f"labels_{mode}"]
+
+        kinematics = torch.tensor(kinematics, dtype=dtype)
+        labels = torch.tensor(labels, dtype=torch.bool)
+
+        # create list of torch_geometric.data.Data objects
+        self.data_list = []
+        for i in range(kinematics.shape[0]):
+            # drop zero-padded components
+            mask = (kinematics[i, ...].abs() > EPS).all(dim=-1)
+            fourmomenta = kinematics[i, ...][mask]
+            label = labels[i, ...]
+            scalars = torch.zeros(
+                fourmomenta.shape[0],
+                0,
+                dtype=dtype,
+            )  # no scalar information
+            data = Data(x=fourmomenta, scalars=scalars, label=label)
+            self.data_list.append(data)
+
+
+class TopTaggingDataset_scalar(TaggingDataset):
     def load_data(
         self,
         filename,
@@ -102,6 +102,7 @@ class TopTaggingDataset(TaggingDataset):
         kinematics = torch.tensor(kinematics, dtype=dtype)
         scalar_q2 = torch.tensor(scalar_q2, dtype=dtype)
         labels = torch.tensor(labels, dtype=torch.bool)
+        # print(f"scalar_q2.shape: {scalar_q2.shape}")
 
         # create list of torch_geometric.data.Data objects
         self.data_list = []
@@ -109,46 +110,13 @@ class TopTaggingDataset(TaggingDataset):
             # drop zero-padded components
             mask = (kinematics[i, ...].abs() > EPS).all(dim=-1)
             fourmomenta = kinematics[i, ...][mask]
-            scalars = scalar_q2[i].expand(fourmomenta.shape[0], 1)
+            scalars = scalar_q2[i, ...][mask]
             label = labels[i, ...]
+            data = Data(x=fourmomenta, label=label)
+
             data = Data(x=fourmomenta, scalars=scalars, label=label)
             self.data_list.append(data)
 
-# class TopTaggingDataset(TaggingDataset):
-#     def load_data(
-#         self,
-#         filename,
-#         mode,
-#         dtype=torch.float32,
-#     ):
-#         """
-#         Parameters
-#         ----------
-#         filename : str
-#             Path to file in npz format where the dataset in stored
-#         mode : {"train", "test", "val"}
-#             Purpose of the dataset
-#             Train, test and validation datasets are already seperated in the specified file
-#         """
-#         data = np.load(filename)
-#         kinematics = data[f"kinematics_{mode}"]
-#         scalar_q2 = data[f"event_scalars_{mode}"]
-#         labels = data[f"labels_{mode}"]
-
-#         kinematics = torch.tensor(kinematics, dtype=dtype)
-#         scalar_q2 = torch.tensor(scalar_q2, dtype=dtype)
-#         labels = torch.tensor(labels, dtype=torch.bool)
-
-#         # create list of torch_geometric.data.Data objects
-#         self.data_list = []
-#         for i in range(kinematics.shape[0]):
-#             # drop zero-padded components
-#             mask = (kinematics[i, ...].abs() > EPS).all(dim=-1)
-#             fourmomenta = kinematics[i, ...][mask]
-#             scalars = scalar_q2[i].expand(fourmomenta.shape[0], 1)
-#             label = labels[i, ...]
-#             data = Data(x=fourmomenta, scalars=scalars, label=label)
-#             self.data_list.append(data)
 
 class QGTaggingDataset(TaggingDataset):
     def load_data(

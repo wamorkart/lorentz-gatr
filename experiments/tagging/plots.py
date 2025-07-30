@@ -33,6 +33,7 @@ def plot_mixer(cfg, plot_path, title, plot_dict):
                 plot_dict["train_lr"],
                 labels=["train loss", "val loss"],
                 logy=True,
+
             )
             plot_metric(
                 out,
@@ -172,14 +173,14 @@ def plot_score(
         range=xrange,
         bins=bins,
         alpha=0.5,
-        label="QCD",
+        label="Djangoh",
         density=True,
         color=cols[0],
     )
     ax.hist(
         labels_predicted[labels_true == 1],
         bins=bins,
-        label="Top",
+        label="Rapgap",
         alpha=0.5,
         density=True,
         color=cols[1],

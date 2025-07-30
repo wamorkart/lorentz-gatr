@@ -22,6 +22,8 @@ def convert_to_np(file_list, base_path, name, max_part=30, nevts=30000000):
     }
 
     mask_list = ['y', 'ptmiss', 'Empz']
+    # jet_list = ['jet_pt', 'jet_eta', 'jet_phi']
+
     jet_list = ['jet_pt', 'jet_eta', 'jet_phi', 'jet_e', 'jet_mass']
     particle_list = ['jet_part_pt', 'jet_part_eta', 'jet_part_phi',
                      'jet_part_e', 'jet_part_charge', 'jet_part_idx']
@@ -185,33 +187,39 @@ if __name__=='__main__':
                                    )
 
 
-    # ntrain = int(2.5e6)
-    # nval = int(3.0e6)
-    ntotal = particles.shape[0]
-    ntrain = int(0.6 * ntotal)
-    nval = int(0.2 * ntotal)
-    ntest = ntotal - ntrain - nval
-    np.savez('train_100points.npz',
+    ntrain = int(2.5e6)
+    nval = int(3.0e6)
+    # ntotal = particles.shape[0]
+    # ntrain = int(0.6 * ntotal)
+    # nval = int(0.2 * ntotal)
+    # ntest = ntotal - ntrain - nval
+    np.savez('train_Omnilearn.npz',
              data=particles[:ntrain],
              jet=jets[:ntrain],
              labels_train=pid[:ntrain],
              kinematics_train=four_momentum[:ntrain])
 
-    np.savez('val_100points.npz',
-         data=particles[ntrain:ntrain+nval],
-         jet=jets[ntrain:ntrain+nval],
-         labels_val=pid[ntrain:ntrain+nval],
-         kinematics_val=four_momentum[ntrain:ntrain+nval])
+    np.savez('val_Omnilearn.npz',
+         data=particles[ntrain:nval],
+         jet=jets[ntrain:nval],
+         labels_val=pid[ntrain:nval],
+         kinematics_val=four_momentum[ntrain:nval])
+    
+    np.savez('test_Omnilearn.npz',
+         data=particles[nval:],
+         jet=jets[nval:],
+         labels_test=pid[nval:],
+         kinematics_test=four_momentum[nval:])
 
-    np.savez('test_100points.npz',
-         data=particles[ntrain+nval:],
-         jet=jets[ntrain+nval:],
-         labels_test=pid[ntrain+nval:],
-         kinematics_test=four_momentum[ntrain+nval:])
+    # np.savez('test_100points_maxevents.npz',
+    #      data=particles[ntrain+nval:],
+    #      jet=jets[ntrain+nval:],
+    #      labels_test=pid[ntrain+nval:],
+    #      kinematics_test=four_momentum[ntrain+nval:])
 
     print(f"Saved training data: {ntrain} events")
-    print(f"Saved validation data: {nval} events")  
-    print(f"Saved test data: {ntest} events")
+    print(f"Saved validation data: {ntrain:nval} events")  
+    print(f"Saved test data: {nval:} events")
 
 
     

@@ -6,7 +6,7 @@ black==22.3.0
 h5py
 hdf5plugin
 matplotlib
-numpy
+numpy<2
 
 ## Standard utils
 tqdm

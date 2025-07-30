@@ -10,6 +10,7 @@ from sklearn.metrics import roc_curve, roc_auc_score, accuracy_score
 from gatr.interface.spurions import get_num_spurions
 from experiments.base_experiment import BaseExperiment
 from experiments.tagging.dataset import TopTaggingDataset
+from experiments.tagging.dataset import TopTaggingDataset_scalar
 from experiments.tagging.dataset import QGTaggingDataset
 from experiments.tagging.plots import plot_mixer
 from experiments.tagging.embedding import embed_tagging_data_into_ga
@@ -35,11 +36,21 @@ class TaggingExperiment(BaseExperiment):
         with open_dict(self.cfg):
             # global token?
             self.cfg.data.include_global_token = not self.cfg.model.mean_aggregation
-            self.cfg.model.net.in_mv_channels = 1
+            # self.cfg.model.net.in_mv_channels = 1
 
             # extra scalar channels
+            # self.cfg.model.net.in_s_channels = 8
+            print(f"CFG.DATA.ADD_SCALAR_FEATURES: {self.cfg.data.add_scalar_features}")
+            print(f"cfg.model.net.in_s_channels: {self.cfg.model.net.in_s_channels}")
+            print(f"cfg.model.net.in_mv_channels: {self.cfg.model.net.in_mv_channels}")
+            print(f"cfg.model.net.hidden_mv_channels: {self.cfg.model.net.hidden_mv_channels}")
+
+
+
             if self.cfg.data.add_scalar_features:
-                self.cfg.model.net.in_s_channels += 7
+                self.cfg.model.net.in_s_channels += 1
+            print(f"cfg.model.net.in_s_channels: {self.cfg.model.net.in_s_channels}")
+    
             if self.cfg.data.include_global_token:
                 self.cfg.model.net.in_s_channels += self.cfg.data.num_global_tokens
 
@@ -291,7 +302,7 @@ class TopTaggingExperiment(TaggingExperiment):
             self.cfg.data.num_global_tokens = 1
 
             # no fundamental scalar information available
-            self.cfg.model.net.in_s_channels = 0
+            # self.cfg.model.net.in_s_channels = 0
 
     def init_data(self):
         data_path = os.path.join(
@@ -300,6 +311,21 @@ class TopTaggingExperiment(TaggingExperiment):
         )
         self._init_data(TopTaggingDataset, data_path)
 
+class TopTaggingExperiment_scalar(TaggingExperiment):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        with open_dict(self.cfg):
+            self.cfg.data.num_global_tokens = 1
+
+            # no fundamental scalar information available
+            # self.cfg.model.net.in_s_channels = 0
+
+    def init_data(self):
+        data_path = os.path.join(
+            self.cfg.data.data_dir, f"{self.cfg.data.dataset}.npz"
+            # self.cfg.data.data_dir, f"toptagging_{self.cfg.data.dataset}.npz"
+        )
+        self._init_data(TopTaggingDataset_scalar, data_path)
 
 class QGTaggingExperiment(TaggingExperiment):
     def __init__(self, *args, **kwargs):

@@ -3,7 +3,7 @@ import torch
 import torch.multiprocessing as mp
 import torch.distributed as dist
 from experiments.amplitudes.experiment import AmplitudeExperiment
-from experiments.tagging.experiment import TopTaggingExperiment, QGTaggingExperiment
+from experiments.tagging.experiment import TopTaggingExperiment, QGTaggingExperiment, TopTaggingExperiment_scalar
 from experiments.eventgen.processes import (
     ttbarExperiment,
     zmumuExperiment,
@@ -41,6 +41,8 @@ def ddp_worker(rank, cfg, world_size):
         constructor = AmplitudeExperiment
     elif cfg.exp_type == "toptagging":
         constructor = TopTaggingExperiment
+    elif cfg.exp_type == "toptagging_scalar":
+        constructor = TopTaggingExperiment_scalar    
     elif cfg.exp_type == "qgtagging":
         constructor = QGTaggingExperiment
     elif cfg.exp_type == "jctagging":

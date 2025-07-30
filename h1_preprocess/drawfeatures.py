@@ -225,7 +225,7 @@ def load_and_plot_kinematics(file_path='combinedh1_withscalars.npz'):
     scalar_names = ['delta eta', 'delta phi', 'log(1-rel pt)', 'log pt','log E', 'log(1-rel E)', ' delta R', 'charge']
     jet_names = ['Jet pT','Jet eta', 'Jet mass', 'Jet multiplcity']
     x_ranges = [[0,25], [-5,5], [-5,5], [0,10]]
-    scalar_x_ranges = [[-1,1], [-1,1], [-1.75,0], [-3,3], [-1.75,0], [-3,5], [0,1.2], [-2,2]]
+    scalar_x_ranges = [[-3,3], [-1.5,1.5], [-1.75,0], [-3,3], [-1.75,0], [-3,5], [0,1.2], [-2,2]]
     jet_x_ranges = [[10,80],[-1.5,2.5],[0,25],[0,30]]
 
     # Plot kinematics features - save each individually
@@ -361,8 +361,8 @@ def load_and_plot_kinematics(file_path='combinedh1_withscalars.npz'):
 
 if __name__ == "__main__":
     # Set style for better plots
-    plt.style.use('seaborn-v0_8')
-    sns.set_palette("husl")
+    plt.style.use('fast')
+    # sns.set_palette("husl")
     
     # Main plotting function
     load_and_plot_kinematics()

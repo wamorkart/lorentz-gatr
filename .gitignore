@@ -12,3 +12,9 @@ mlruns/
 outputs/
 scripts/
 *~
+.out
+.png
+.pdf
+.npz
+.h5
+.yaml

@@ -39,22 +39,24 @@ def extract_four_vectors_and_scalars(filename):
             print(f"Warning: 'reco_particle_features' not found in {filename}")
             return None, None
         
-        # Extract event-level scalars (pseudorapidity from reco_event_features)
+        # Extract event-level scalars (first 4 features from reco_event_features)
         if 'reco_event_features' in f.keys():
             event_features = f['reco_event_features'][:]
             print(f"Event features shape: {event_features.shape}")
             
-            # Extract pseudorapidity (0th element)
-            event_q2 = event_features[:, 0]
-            print(f"Event pseudorapidity shape: {event_q2.shape}")
-            
-            # You can add more event-level features here if needed
-            # For example, if you want multiple features:
-            # event_scalars = event_features[:, :n]  # where n is number of features you want
-            
-            # For now, just using pseudorapidity (reshape to 2D)
-            event_scalars = event_q2[:, np.newaxis]
-            print(f"Event scalars shape: {event_scalars.shape}")
+            # Extract first 4 event-level features
+            if event_features.shape[1] >= 4:
+                event_scalars = event_features[:, :4]  # Take first 4 features
+                print(f"Event scalars shape: {event_scalars.shape}")
+                print(f"Using first 4 event features as scalars")
+            else:
+                print(f"Warning: Less than 4 event features available in {filename}")
+                # Pad with zeros if less than 4 features
+                n_features = event_features.shape[1]
+                padded_features = np.zeros((event_features.shape[0], 4))
+                padded_features[:, :n_features] = event_features
+                event_scalars = padded_features
+                print(f"Padded event scalars shape: {event_scalars.shape}")
             
         else:
             print(f"Warning: 'reco_event_features' not found in {filename}")
@@ -172,8 +174,8 @@ def main():
                        event_scalars_val=val_scalars)
     
     # Save combined file
-    print("Combining the npz files into combinedh1_q2.npz...")
-    np.savez_compressed('combinedh1_q2.npz', 
+    print("Combining the npz files into combinedh1_fourscalars.npz...")
+    np.savez_compressed('combinedh1_fourscalars.npz', 
                        kinematics_train=train_data, 
                        labels_train=train_pid,
                        event_scalars_train=train_scalars,
