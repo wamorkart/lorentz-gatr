@@ -1,0 +1,10 @@
+exp_type: toptagging_scalar
+exp_name: topt_debug
+
+data:
+ data_dir : /global/cfs/cdirs/m3246/twamorka/lgatr/lorentz-gatr/h1_preprocess/
+ dataset: combinedh1_withscalars_30particles_2p5M
+ add_scalar_features: false
+
+defaults:
+ - default_tagging
