@@ -466,6 +466,37 @@ class BaseExperiment:
                 factor=self.cfg.training.reduceplateau_factor,
                 patience=self.cfg.training.reduceplateau_patience,
             )
+        elif self.cfg.training.scheduler == "DelayedCosineAnnealingLR":
+            constant = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 1.0)
+            cosine = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer, 
+                T_max=int(
+                    self.cfg.training.iterations*(1-self.cfg.training.cosine_warmup_steps_frac)
+                    ),
+                eta_min=self.cfg.training.lr * self.cfg.training.min_cosine_factor,
+                )  
+            scheduler = torch.optim.lr_scheduler.SequentialLR(
+                optimizer,
+                schedulers=[constant, cosine],
+                milestones=[int(self.cfg.training.iterations * self.cfg.training.cosine_warmup_steps_frac)],   
+                )
+        elif self.cfg.training.scheduler == "DelayedCosineAnnealingLRv2":
+            warmup = torch.optim.lr_scheduler.LambdaLR(
+                optimizer, 
+                lr_lambda= lambda step: 1.0 + (self.cfg.training.cosine_warmup_increase - 1.0) * step / (self.cfg.training.iterations*self.cfg.training.cosine_warmup_steps_frac)
+                )
+            cosine = torch.optim.lr_scheduler.CosineAnnealingLR(
+                optimizer, 
+                T_max=int(
+                    self.cfg.training.iterations*(1-self.cfg.training.cosine_warmup_steps_frac)
+                    ),
+                eta_min=self.cfg.training.lr * self.cfg.training.min_cosine_factor,
+                )  
+            scheduler = torch.optim.lr_scheduler.SequentialLR(
+                optimizer,
+                schedulers=[warmup, cosine],
+                milestones=[int(self.cfg.training.iterations * self.cfg.training.cosine_warmup_steps_frac)],   
+                )
         else:
             raise ValueError(
                 f"Learning rate scheduler {self.cfg.training.scheduler} not implemented"
@@ -622,7 +653,7 @@ class BaseExperiment:
         if self.ema is not None:
             self.ema.update()
 
-        if self.cfg.training.scheduler in ["OneCycleLR", "CosineAnnealingLR"]:
+        if self.cfg.training.scheduler in ["OneCycleLR", "CosineAnnealingLR", "DelayedCosineAnnealingLR", "DelayedCosineAnnealingLRv2"]:
             self.scheduler.step()
 
         # collect metrics

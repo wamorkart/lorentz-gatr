@@ -47,6 +47,9 @@ training:
  reduceplateau_patience: 50
  onecycle_max_lr: 10
  onecycle_pct_start: 0.3
+ cosine_warmup_steps_frac: 0.15
+ cosine_warmup_increase: 10
+ min_cosine_factor: 0.01
 
  ema_decay: 0.99
 
