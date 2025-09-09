@@ -2,11 +2,10 @@ exp_type: toptagging
 exp_name: topt_debug
 
 data:
- data_dir : data/h1/
- dataset: combinedh1_withscalars_100particles_reshaped
+ data_dir : data
+ dataset: dataset_reco_small
  
 #  dataset: combinedh1_withscalars_100particles_reshaped_lowstats
- add_scalar_features: false
 
 defaults:
  - default_tagging_small

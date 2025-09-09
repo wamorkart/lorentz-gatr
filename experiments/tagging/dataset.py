@@ -25,9 +25,13 @@ class TaggingDataset(torch.utils.data.Dataset):
         We set is_global=None if no global token is used
     """
 
-    def __init__(self, rescale_data):
+    def __init__(self, rescale_data, include_jet_data, include_const_data, global_jet_info, const_jet_info):
         super().__init__()
         self.rescale_data = rescale_data
+        self.include_jet_data = include_jet_data
+        self.include_const_data = include_const_data
+        self.global_jet_info = global_jet_info 
+        self.const_jet_info = const_jet_info
 
     def load_data(self, filename, mode):
         raise NotImplementedError
@@ -74,7 +78,12 @@ class TopTaggingDataset(TaggingDataset):
                 0,
                 dtype=dtype,
             )  # no scalar information
-            data = Data(x=fourmomenta, scalars=scalars, label=label)
+            jet_features = torch.zeros(
+                fourmomenta.shape[0],
+                0,
+                dtype=dtype,
+            )  # no jet features
+            data = Data(x=fourmomenta, scalars=scalars, jet_features=jet_features, label=label)
             self.data_list.append(data)
 
 
@@ -110,11 +119,24 @@ class TopTaggingDataset_scalar(TaggingDataset):
             # drop zero-padded components
             mask = (kinematics[i, ...].abs() > EPS).all(dim=-1)
             fourmomenta = kinematics[i, ...][mask]
-            scalars = scalar_q2[i, ...][mask]
+            scalars_mask = torch.zeros(
+                fourmomenta.shape[0],
+                0,
+                dtype=dtype,
+            )
+            jet_features = torch.zeros(
+                fourmomenta.shape[0],
+                0,
+                dtype=dtype,
+            )
+            if self.const_jet_info + self.global_jet_info > scalar_q2.shape[-1]:
+                raise ValueError("Invalid scalar configuration")            
+            if self.include_jet_data:
+                jet_features = scalar_q2[i, 0, self.const_jet_info:]                
+            if self.include_const_data:
+                scalars_mask = scalar_q2[i, :, :self.const_jet_info][mask]
             label = labels[i, ...]
-            data = Data(x=fourmomenta, label=label)
-
-            data = Data(x=fourmomenta, scalars=scalars, label=label)
+            data = Data(x=fourmomenta, scalars=scalars_mask, jet_features=jet_features, label=label)
             self.data_list.append(data)
 
 

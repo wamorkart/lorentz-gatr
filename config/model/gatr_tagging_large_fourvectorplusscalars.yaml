@@ -1,6 +1,7 @@
 _target_: experiments.tagging.wrappers.TaggingGATrWrapper
 force_xformers: '${training.force_xformers}'
 mean_aggregation: false
+jet_scalar_embed_dim: 10
 
 net:
  _target_: gatr.nets.GATr
@@ -9,7 +10,7 @@ net:
  out_mv_channels: 1
  hidden_mv_channels: 16
 
- in_s_channels: 12
+ in_s_channels: 0
  out_s_channels: null
  hidden_s_channels: 32
 

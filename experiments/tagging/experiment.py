@@ -38,18 +38,17 @@ class TaggingExperiment(BaseExperiment):
             self.cfg.data.include_global_token = not self.cfg.model.mean_aggregation
             # self.cfg.model.net.in_mv_channels = 1
 
-            # extra scalar channels
-            # self.cfg.model.net.in_s_channels = 8
-            print(f"CFG.DATA.ADD_SCALAR_FEATURES: {self.cfg.data.add_scalar_features}")
-            print(f"cfg.model.net.in_s_channels: {self.cfg.model.net.in_s_channels}")
-            print(f"cfg.model.net.in_mv_channels: {self.cfg.model.net.in_mv_channels}")
-            print(f"cfg.model.net.hidden_mv_channels: {self.cfg.model.net.hidden_mv_channels}")
-
-
-
-            if self.cfg.data.add_scalar_features:
-                self.cfg.model.net.in_s_channels += 1
-            print(f"cfg.model.net.in_s_channels: {self.cfg.model.net.in_s_channels}")
+             # extra scalar channels
+            if self.cfg.data.include_jet_data: 
+                if self.cfg.data.include_const_data or self.cfg.data.add_scalar_features:
+                    self.cfg.model.net.in_s_channels += self.cfg.model.jet_scalar_embed_dim + 1
+                else:
+                    self.cfg.model.net.in_s_channels += self.cfg.data.global_jet_info + 1
+            else:
+                if self.cfg.data.add_scalar_features:
+                    self.cfg.model.net.in_s_channels += self.cfg.data.scalar_features
+                if self.cfg.data.include_const_data:
+                    self.cfg.model.net.in_s_channels += self.cfg.data.const_jet_info
     
             if self.cfg.data.include_global_token:
                 self.cfg.model.net.in_s_channels += self.cfg.data.num_global_tokens
@@ -72,6 +71,14 @@ class TaggingExperiment(BaseExperiment):
                 self.cfg.model.net.reinsert_s_channels = list(
                     range(self.cfg.model.net.in_s_channels)
                 )
+                
+            # embedding layers setup
+            self.cfg.model.jet_elements = self.cfg.data.global_jet_info
+            self.cfg.model.const_elements = self.cfg.data.const_jet_info
+            if self.cfg.data.add_scalar_features:
+                self.cfg.model.const_elements = self.cfg.data.scalar_features
+                if self.cfg.data.include_const_data:
+                    self.cfg.model.const_elements += self.cfg.data.const_jet_info
 
     def init_data(self):
         raise NotImplementedError
@@ -79,7 +86,13 @@ class TaggingExperiment(BaseExperiment):
     def _init_data(self, Dataset, data_path):
         LOGGER.info(f"Creating {Dataset.__name__} from {data_path}")
         t0 = time.time()
-        kwargs = {"rescale_data": self.cfg.data.rescale_data}
+        kwargs = {
+                "rescale_data": self.cfg.data.rescale_data, 
+                "include_jet_data": self.cfg.data.include_jet_data, 
+                "include_const_data": self.cfg.data.include_const_data, 
+                "global_jet_info": self.cfg.data.global_jet_info, 
+                "const_jet_info": self.cfg.data.const_jet_info
+                }
         self.data_train = Dataset(**kwargs)
         self.data_test = Dataset(**kwargs)
         self.data_val = Dataset(**kwargs)
@@ -170,7 +183,9 @@ class TaggingExperiment(BaseExperiment):
             self.optimizer.eval()
         with torch.no_grad():
             for batch in loader:
-                y_pred, label = self._get_ypred_and_label(batch)
+                batch = batch.to(self.device)
+                y_pred = self.model(batch, self.cfg.data)[:, 0]
+                label = batch.label.to(self.dtype)
                 y_pred = torch.nn.functional.sigmoid(y_pred)
                 labels_true.append(label.cpu().float())
                 labels_predict.append(y_pred.cpu().float())
@@ -274,22 +289,14 @@ class TaggingExperiment(BaseExperiment):
         return metrics["loss"]
 
     def _batch_loss(self, batch):
-        y_pred, label = self._get_ypred_and_label(batch)
+        batch = batch.to(self.device)
+        y_pred = self.model(batch, self.cfg.data)[:, 0]
+        label = batch.label.to(self.dtype)
         loss = self.loss(y_pred, label)
         assert torch.isfinite(loss).all()
 
         metrics = {}
         return loss, metrics
-
-    def _get_ypred_and_label(self, batch):
-        batch = batch.to(self.device)
-        embedding = embed_tagging_data_into_ga(
-            batch.x, batch.scalars, batch.ptr, self.cfg.data
-        )
-        embedding["mv"] = embedding["mv"].to(self.dtype)
-        embedding["s"] = embedding["s"].to(self.dtype)
-        y_pred = self.model(embedding)[:, 0]
-        return y_pred, batch.label.to(self.dtype)
 
     def _init_metrics(self):
         return {}
