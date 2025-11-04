@@ -1,7 +1,6 @@
 _target_: experiments.tagging.wrappers.TaggingGATrWrapper
 force_xformers: '${training.force_xformers}'
 mean_aggregation: false
-jet_scalar_embed_dim: 20
 
 net:
  _target_: gatr.nets.GATr

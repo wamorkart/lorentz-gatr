@@ -38,18 +38,12 @@ class TaggingExperiment(BaseExperiment):
             self.cfg.data.include_global_token = not self.cfg.model.mean_aggregation
             # self.cfg.model.net.in_mv_channels = 1
 
-             # extra scalar channels
-            if self.cfg.data.include_jet_data: 
-                if self.cfg.data.include_const_data or self.cfg.data.add_scalar_features:
-                    self.cfg.model.net.in_s_channels += self.cfg.model.jet_scalar_embed_dim + 1
-                else:
-                    self.cfg.model.net.in_s_channels += self.cfg.data.global_jet_info + 1
-            else:
-                if self.cfg.data.add_scalar_features:
-                    self.cfg.model.net.in_s_channels += self.cfg.data.scalar_features
-                if self.cfg.data.include_const_data:
-                    self.cfg.model.net.in_s_channels += self.cfg.data.const_jet_info
-    
+            # extra scalar channels
+            if self.cfg.data.include_jet_data:
+                self.cfg.model.net.in_s_channels += self.cfg.data.global_jet_info + 1
+            if self.cfg.data.include_const_data:
+                self.cfg.model.net.in_s_channels += self.cfg.data.const_jet_info
+
             if self.cfg.data.include_global_token:
                 self.cfg.model.net.in_s_channels += self.cfg.data.num_global_tokens
 
@@ -71,14 +65,6 @@ class TaggingExperiment(BaseExperiment):
                 self.cfg.model.net.reinsert_s_channels = list(
                     range(self.cfg.model.net.in_s_channels)
                 )
-                
-            # embedding layers setup
-            self.cfg.model.jet_elements = self.cfg.data.global_jet_info
-            self.cfg.model.const_elements = self.cfg.data.const_jet_info
-            if self.cfg.data.add_scalar_features:
-                self.cfg.model.const_elements = self.cfg.data.scalar_features
-                if self.cfg.data.include_const_data:
-                    self.cfg.model.const_elements += self.cfg.data.const_jet_info
 
     def init_data(self):
         raise NotImplementedError
@@ -87,7 +73,6 @@ class TaggingExperiment(BaseExperiment):
         LOGGER.info(f"Creating {Dataset.__name__} from {data_path}")
         t0 = time.time()
         kwargs = {
-                "rescale_data": self.cfg.data.rescale_data, 
                 "include_jet_data": self.cfg.data.include_jet_data, 
                 "include_const_data": self.cfg.data.include_const_data, 
                 "global_jet_info": self.cfg.data.global_jet_info, 

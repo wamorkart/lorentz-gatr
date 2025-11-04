@@ -25,13 +25,28 @@ class TaggingDataset(torch.utils.data.Dataset):
         We set is_global=None if no global token is used
     """
 
-    def __init__(self, rescale_data, include_jet_data, include_const_data, global_jet_info, const_jet_info):
+def __init__(self, 
+        include_jet_data, 
+        include_const_data, 
+        global_jet_info, 
+        const_jet_info
+        ):
         super().__init__()
-        self.rescale_data = rescale_data
         self.include_jet_data = include_jet_data
         self.include_const_data = include_const_data
         self.global_jet_info = global_jet_info 
         self.const_jet_info = const_jet_info
+
+        # Means and stds for standardization
+        self.mean_const = [0.031, 0.0, -0.10,
+                          -0.23,-0.10,0.27, 0.0,
+                          0.0, 0.0,  0.0,  0.0,  0.0, 0.0]
+        self.std_const = [0.35, 0.35,  0.178, 
+                         1.2212526, 0.169,1.17,1.0,
+                         1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        self.mean_jet =  [ 19.15986358 , 0.57154217 , 6.00354102, 11.730992]
+        self.std_jet  = [9.18613789, 0.80465287 ,2.99805704 ,5.14910232]
+        
 
     def load_data(self, filename, mode):
         raise NotImplementedError
@@ -111,7 +126,6 @@ class TopTaggingDataset_scalar(TaggingDataset):
         kinematics = torch.tensor(kinematics, dtype=dtype)
         scalar_q2 = torch.tensor(scalar_q2, dtype=dtype)
         labels = torch.tensor(labels, dtype=torch.bool)
-        # print(f"scalar_q2.shape: {scalar_q2.shape}")
 
         # create list of torch_geometric.data.Data objects
         self.data_list = []
@@ -132,9 +146,11 @@ class TopTaggingDataset_scalar(TaggingDataset):
             if self.const_jet_info + self.global_jet_info > scalar_q2.shape[-1]:
                 raise ValueError("Invalid scalar configuration")            
             if self.include_jet_data:
-                jet_features = scalar_q2[i, 0, self.const_jet_info:]                
+                jet_features = scalar_q2[i, 0, self.const_jet_info:]    
+                jet_features = (jet_features - torch.tensor(self.mean_jet, dtype=jet_features.dtype)) / torch.tensor(self.std_jet, dtype=jet_features.dtype)            
             if self.include_const_data:
                 scalars_mask = scalar_q2[i, :, :self.const_jet_info][mask]
+                scalars_mask = (scalars_mask - torch.tensor(self.mean_const, dtype=scalars_mask.dtype)) / torch.tensor(self.std_const, dtype=scalars_mask.dtype)
             label = labels[i, ...]
             data = Data(x=fourmomenta, scalars=scalars_mask, jet_features=jet_features, label=label)
             self.data_list.append(data)

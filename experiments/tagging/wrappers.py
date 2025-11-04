@@ -45,20 +45,15 @@ class TaggingGATrWrapper(nn.Module):
         net,
         mean_aggregation=False,
         force_xformers=True,
-        jet_scalar_embed_dim=10,
-        jet_elements=4,
-        const_elements=4,
     ):
         super().__init__()
         self.net = net
         self.aggregation = MeanAggregation() if mean_aggregation else None
         self.force_xformers = force_xformers
-        self.embed_jet = nn.Linear(jet_elements, jet_scalar_embed_dim)
-        self.embed_const = nn.Linear(const_elements, jet_scalar_embed_dim)
 
     def forward(self, batch, cfg_data):
         embedding = embed_tagging_data_into_ga(
-            batch.x, batch.scalars, batch.jet_features, batch.ptr, cfg_data, self.embed_jet, self.embed_const
+            batch.x, batch.scalars, batch.jet_features, batch.ptr, cfg_data
         )
         embedding["mv"] = embedding["mv"].to(dtype=torch.float32)
         embedding["s"] = embedding["s"].to(dtype=torch.float32)

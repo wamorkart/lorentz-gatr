@@ -12,15 +12,9 @@ def get_batch_from_ptr(ptr):
     return torch.arange(len(ptr) - 1, device=ptr.device).repeat_interleave(
         ptr[1:] - ptr[:-1],
     )
-    
-def standardize(features):
-    mean = features.mean(dim=0, keepdim=True)
-    std = features.std(dim=0, keepdim=True)
-    std = torch.where(std > 0, std, torch.ones_like(std))
-    return (features - mean) / std
 
 
-def embed_tagging_data_into_ga(fourmomenta, scalars, jet_features, ptr, cfg_data, embed_jet, embed_const):
+def embed_tagging_data_into_ga(fourmomenta, scalars, jet_features, ptr, cfg_data):
     """
     Embed tagging data into geometric algebra representation
     We use torch_geometric sparse representations to be more memory efficient
@@ -36,8 +30,6 @@ def embed_tagging_data_into_ga(fourmomenta, scalars, jet_features, ptr, cfg_data
         Indices of the first particle for each jet
         Also includes the first index after the batch ends
     cfg_data: settings for embedding
-    embed_jet: Learnable linear map for the jet-level features
-    embed_const: Learnable linear map for the constitutent-level features
 
     Returns
     -------
@@ -52,50 +44,24 @@ def embed_tagging_data_into_ga(fourmomenta, scalars, jet_features, ptr, cfg_data
     jet = scatter(fourmomenta, index=batch, dim=0, reduce="sum").index_select(
         0, batch
     )
-
-    # add extra scalar channels
-    if cfg_data.add_scalar_features:
-        log_pt = get_pt(fourmomenta).unsqueeze(-1).log()
-        log_energy = fourmomenta[..., 0].unsqueeze(-1).log()
-        log_pt_rel = (get_pt(fourmomenta).log() - get_pt(jet).log()).unsqueeze(-1)
-        log_energy_rel = (fourmomenta[..., 0].log() - jet[..., 0].log()).unsqueeze(-1)
-        phi_4, phi_jet = get_phi(fourmomenta), get_phi(jet)
-        dphi = ((phi_4 - phi_jet + torch.pi) % (2 * torch.pi) - torch.pi).unsqueeze(-1)
-        eta_4, eta_jet = get_eta(fourmomenta), get_eta(jet)
-        deta = -(eta_4 - eta_jet).unsqueeze(-1)
-        dr = torch.sqrt(dphi**2 + deta**2)
-        scalar_features = [
-            log_pt,
-            log_energy,
-            log_pt_rel,
-            log_energy_rel,
-            dphi,
-            deta,
-            dr,
-        ]
-        scalars = torch.cat(
-            (scalars, *scalar_features),
-            dim=-1,
-        )
         
-    if scalars.shape[1] > 0:
-        scalars = standardize(scalars)
+    jet_features = jet_features.reshape(batchsize,-1)
 
-    if cfg_data.include_jet_data:
-        jet_features = jet_features.reshape(batchsize,-1)
-        if jet_features.shape[1] == 0:
-            raise ValueError("No jet features is not allowed in include_jet_data mode")
-        jet_features = standardize(jet_features)
-        if scalars.shape[1] == 0:
-            scalars = torch.zeros(
+    scalars_buffer = scalars.clone()
+    scalars = torch.zeros(
                 scalars.shape[0], 
-                jet_features.shape[1], 
+                scalars_buffer.shape[1] + jet_features.shape[1], 
                 dtype=scalars.dtype, 
                 device=scalars.device
             )
-        else:
-            jet_features = embed_jet(jet_features) 
-            scalars = embed_const(scalars)
+
+    if scalars_buffer.shape[1] > 0:
+        scalars[:, :scalars_buffer.shape[1]] = scalars_buffer
+    
+    if cfg_data.include_jet_data:    
+        if jet_features.shape[1] == 0:
+            raise ValueError("No jet features is not allowed in include_jet_data mode")
+        jet_features = torch.cat((torch.zeros((*jet_features.shape[:-1], scalars_buffer.shape[-1]), device=scalars.device), jet_features), dim=-1)
 
         type_token_jet = torch.ones(jet_features.shape[:-1], device=scalars.device).unsqueeze(-1)
         jet_features = torch.cat((type_token_jet, jet_features), axis=-1) 

@@ -5,12 +5,10 @@ data:
  add_time_reference: true
  add_xzplane: false
  add_yzplane: false
- add_scalar_features: false
- scalar_features: 7
  include_jet_data: false
  include_const_data: false
  global_jet_info: 4
- const_jet_info: 8
+ const_jet_info: 13
  reinsert_channels: false
  rescale_data: true
  scalar_features_preprocessing: # following weaver defaults
